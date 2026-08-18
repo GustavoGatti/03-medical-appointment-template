@@ -1,42 +1,46 @@
-import z from 'zod/v3';
 import { getSystemPrompt, getUserPromptTemplate, MessageSchema } from '../../prompts/v1/messageGenerator.ts';
 import { OpenRouterService } from '../../services/openRouterService.ts';
 import type { GraphState } from '../graph.ts';
 import { AIMessage } from 'langchain';
 
-export function createMessageGeneratorNode(llmService: OpenRouterService) {
+export function createMessageGeneratorNode(llmClient: OpenRouterService) {
     return async (state: GraphState): Promise<Partial<GraphState>> => {
         console.log(`💬 Generating response message...`);
 
         try {
-
-            const hasSucceeded = state.actionSuccess === true;
-            const cenario = `${state.intent ?? 'unknown'}_${hasSucceeded}`;
-            const detalhes = {
+            const hasSucceeded = state.actionSuccess ? 'success' : 'error'
+            const scenario = `${state.intent ?? 'unknown'}_${hasSucceeded}`
+            const details = {
                 professionalName: state.professionalName,
                 datetime: state.datetime,
                 patientName: state.patientName,
-                error: state.error
-            };
+                error: state.error,
+            }
 
-            const systemPrompt = getSystemPrompt();
-            const userPrompt = getUserPromptTemplate({ cenario, detalhes });
+            const systemPrompt = getSystemPrompt()
+            const userPrompt = getUserPromptTemplate({ scenario, details })
 
-            const result = await llmService.generateStructured(systemPrompt, userPrompt, MessageSchema);
-
+            const result = await llmClient.generateStructured(
+                systemPrompt,
+                userPrompt,
+                MessageSchema,
+            )
+            console.log(`✅ Message generated:`, result.data?.message ?? result.data ?? result);
 
             if (result.error) {
-                console.error(`❌ Error generating message: ${result.error}`);
+                console.log(`⚠️  Message generation failed: ${result.error}`);
                 return {
+
                     messages: [
                         ...state.messages,
-                        new AIMessage('An error occurred while generating the message.')
+                        new AIMessage("Desculpe, errei!")
                     ],
                 };
             }
-            console.log(`✅ Message generated successfully`, result.data?.message ?? result.data ?? result);
+
 
             return {
+
                 messages: [
                     ...state.messages,
                     new AIMessage(result.data!.message)
@@ -45,7 +49,7 @@ export function createMessageGeneratorNode(llmService: OpenRouterService) {
         } catch (error) {
             console.error('❌ Error in messageGenerator node:', error);
             return {
-                ...state,
+
                 messages: [
                     ...state.messages,
                     new AIMessage('An error occurred while processing your request.')

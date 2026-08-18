@@ -52,7 +52,7 @@ export class OpenRouterService {
         catch (error) {
             console.error('❌ Error in generateStructured:', error);
             return {
-                sucess: false,
+                sucess: true,
                 error: error instanceof Error ? error.message : String(error)
             };
         }

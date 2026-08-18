@@ -19,7 +19,6 @@ export function createCancellerNode(appointmentService: AppointmentService) {
         const errorMessages = validation.error.errors.map(err => err.message).join(', ');
         console.log(`Validation failed: ${errorMessages}`);
         return {
-          ...state,
           actionSuccess: false,
           actionError: errorMessages,
         };
