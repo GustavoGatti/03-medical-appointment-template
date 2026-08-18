@@ -21,8 +21,6 @@ export const config: ModelConfig = {
   httpReferer: '',
   xTitle: 'IA Devs - Prompt Chaining Article Generator',
   models: [
-    // 'qwen/qwen3-coder-next',
-    // https://openrouter.ai/models?fmt=cards&max_price=0&order=throughput-high-to-low&supported_parameters=structured_outputs%2Cresponse_format
     'nvidia/nemotron-3-ultra-550b-a55b:free',
   ],
   provider: {
